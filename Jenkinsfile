@@ -52,17 +52,17 @@ pipeline {
 
         stage('Semgrep-Scan') {
             steps {
-                script {
-                try {
+              script {
+            try {
                 // Pull the Semgrep Docker image
                 sh 'docker pull returntocorp/semgrep'
                 
                 // Run Semgrep scan within the Docker container
                 sh '''
                     docker run \
-                    -e SEMGREP_APP_TOKEN="${SEMGREP_APP_TOKEN}" \
-                    -v "$(pwd):/workspace" \
-                    -w "/workspace" \
+                    -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
+                    -v "$(pwd):/var/lib/jenkins/workspace/amazonproject2" \
+                    -w "/var/lib/jenkins/workspace/amazonproject2" \
                     returntocorp/semgrep semgrep ci
                 '''
             } catch (Exception e) {
@@ -72,6 +72,7 @@ pipeline {
         }
     }
 }
+
 
 
          stage('Upload Semgrep Scan Report to DefectDojo') {
