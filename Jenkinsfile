@@ -58,13 +58,11 @@ pipeline {
                 sh 'docker pull returntocorp/semgrep'
                 
                 // Run Semgrep scan within the Docker container
-                sh '''
-                    docker run \
+                sh ''' docker run \
                     -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
                     -v "$(pwd):/var/lib/jenkins/workspace/amazonproject2" \
                     -w "/var/lib/jenkins/workspace/amazonproject2" \
-                    returntocorp/semgrep semgrep ci
-                '''
+                    returntocorp/semgrep semgrep ci '''
             } catch (Exception e) {
                 echo "Failed to execute Semgrep scan: ${e.message}"
                 currentBuild.result = 'FAILURE'
