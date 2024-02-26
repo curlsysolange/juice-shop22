@@ -8,7 +8,7 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred')
         SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
-        path_to_host_folder_to_scan = "/mnt/c/Users/bimbi/OneDrive/Desktop/nanadevsec/juice-shop22"
+        path_to_host_folder_to_scan = "/mnt/c/Users/bimbi/OneDrive/Desktop/juiceshop/juice-shop22"
     }
 
     stages {
