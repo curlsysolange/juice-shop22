@@ -16,7 +16,7 @@ pipeline {
         
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Abbyabiola/juice-shop22.git'
+                git branch: 'master', url: 'https://github.com/Abbyabiola/juice-shop22.git'
             }
         }
         
