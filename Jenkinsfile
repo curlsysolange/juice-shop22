@@ -1,6 +1,5 @@
 pipeline {
     agent any
-    }
     
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
@@ -61,36 +60,34 @@ pipeline {
             }
         }
         
-       stage('Semgrep-Scan') {
-    steps {
-        script {
-            try {
-                // Pull the Semgrep Docker image
-                sh 'docker pull returntocorp/semgrep'
-                
-                // Run Semgrep scan within the Docker container
-                sh '''
-                    docker run \
-                    -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
-                    -v "$(pwd):/var/lib/jenkins/workspace/amazonproject2" \
-                    -w "/var/lib/jenkins/workspace/amazonproject2" \
-                    returntocorp/semgrep semgrep ci
-                '''
-            } catch (Exception e) {
-                echo "Failed to execute Semgrep scan: ${e.message}"
-                currentBuild.result = 'FAILURE'
+        stage('Semgrep-Scan') {
+            steps {
+                script {
+                    try {
+                        // Pull the Semgrep Docker image
+                        sh 'docker pull returntocorp/semgrep'
+                        
+                        // Run Semgrep scan within the Docker container
+                        sh '''
+                            docker run \
+                            -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
+                            -v "$(pwd):/workspace" \
+                            -w "/workspace" \
+                            returntocorp/semgrep semgrep ci
+                        '''
+                    } catch (Exception e) {
+                        echo "Failed to execute Semgrep scan: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
             }
         }
-    }
-}
-  
 
         stage('Trivy Image Scan') {
             steps {
                 script {
                     try {
-                        sh 'trivy image abimbola1981/juice-shop22
-                        :latest'
+                        sh 'trivy image abimbola1981/juice-shop22:latest'
                         sh 'pwd'
                     } catch (Exception e) {
                         echo "Failed to execute Trivy image scan: ${e.message}"
@@ -102,7 +99,7 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    sh 'docker push abimbola1981/juice-shopp22:latest'
+                    sh 'docker push abimbola1981/juice-shop22:latest'
                     echo "Push Image to Registry"
                 }
             }
