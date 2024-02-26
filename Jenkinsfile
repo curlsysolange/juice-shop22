@@ -23,7 +23,24 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Gitleaks Scan') {
+            steps {
+                script {
+                    def gitleaks_report = 'gitleaks.json'
+                    // Run Gitleaks scan command here and generate the report
+                    // Example command: sh 'gitleaks --report=$gitleaks_report'
+                }
+            }
+        }
+
+        stage('Upload Gitleaks Scan Report to DefectDojo') {
+            steps {
+                script {
+                    uploadScanReport('gitleaks.json')
+                }
+            }
+        }
+        stage('NPM Install') {
             steps {
                 sh 'npm install'
             }
