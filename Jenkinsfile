@@ -154,7 +154,6 @@ pipeline {
             }
         }
     }
-}
 
 def uploadScanReport(reportFile) {
     // Upload the scan report to DefectDojo
