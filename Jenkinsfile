@@ -23,36 +23,17 @@ pipeline {
             }
         }
 
-        stage('Gitleaks Scan') {
+        stage('Install Dependencies') {
             steps {
-                script {
-                    def gitleaks_report = 'gitleaks.json'
-                    // Run Gitleaks scan command here and generate the report
-                    // Example command: sh 'gitleaks --report=$gitleaks_report'
-                }
+                sh 'npm install'
             }
         }
-
-        stage('Upload Gitleaks Scan Report to DefectDojo') {
-            steps {
-                script {
-                    uploadScanReport('gitleaks.json')
-                }
-            }
-        }
-
         
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
                     sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=amazonpro -Dsonar.projectKey=amazonpro"
                 }
-            }
-        }
-        
-        stage('NPM Install') {
-            steps {
-                sh 'npm install'
             }
         }
 
