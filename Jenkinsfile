@@ -34,18 +34,46 @@ pipeline {
         }
 
         stage('Upload Gitleaks Scan Report to DefectDojo') {
-            steps {
-                script {
-                    uploadScanReport('gitleaks.json')
-                }
+    steps {
+        script {
+            def apiUrl = 'https://your.defectdojo.instance/api/v2/import-scan/'
+            def apiToken = 'your_defectdojo_api_token_here'
+
+            def gitleaksReport = 'gitleaks.json'
+
+            def data = [
+                active: true,
+                verified: true,
+                scan_type: 'Gitleaks Scan',
+                minimum_severity: 'Low',
+                engagement: 19 // Assuming the engagement ID
+            ]
+
+            def headers = [
+                'Authorization': "Token ${apiToken}"
+            ]
+
+            def fileContent = new File(gitleaksReport).text
+
+            def response = httpRequest(
+                acceptType: 'APPLICATION_JSON',
+                contentType: 'APPLICATION_JSON',
+                httpMode: 'POST',
+                requestBody: fileContent,
+                url: apiUrl,
+                customHeaders: headers,
+                ignoreSslErrors: true // Remove this if not needed
+            )
+
+            if (response.status == 201) {
+                println('Successfully uploaded Gitleaks scan report to DefectDojo')
+            } else {
+                println('Failed to upload Gitleaks scan report to DefectDojo')
             }
         }
-        stage('NPM Install') {
-            steps {
-                sh 'npm install'
-            }
-        }
-        
+    }
+}
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {

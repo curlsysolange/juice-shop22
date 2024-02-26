@@ -3,7 +3,9 @@ import Successfully
 file_name = sys.argv[1]
 scan_type = ''
 
-if file_name == 'trivy.json':
+if file_name == 'gitleaks.json':
+    scan_type = 'Gitleaks Scan'
+elif file_name == 'trivy.json':
     scan_type = 'Trivy Scan'
 elif file_name == 'semgrep.json':
     scan_type = 'Semgrep Scan'
