@@ -9,10 +9,8 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred')
         SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
         path_to_host_folder_to_scan = "/mnt/c/Users/bimbi/OneDrive/Desktop/nanadevsec/juice-shop22"
-}
-
     }
-    
+
     stages {
         stage('Clean workspace') {
             steps {
@@ -25,7 +23,8 @@ pipeline {
                 git branch: 'master', url: 'https://github.com/Abbyabiola/juice-shop22.git'
             }
         }
-     stage('Gitleaks Scan') {
+        
+        stage('Gitleaks Scan') {
             steps {
                 script {
                     def gitleaks_report = 'gitleaks.json'
@@ -52,28 +51,26 @@ pipeline {
 
         stage('Semgrep-Scan') {
             steps {
-              script {
-            try {
-                // Pull the Semgrep Docker image
-                sh 'docker pull returntocorp/semgrep'
-                
-                // Run Semgrep scan within the Docker container
-                sh ''' docker run \
-                    -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
-                    -v "$(pwd):/var/lib/jenkins/workspace/amazonproject2" \
-                    -w "/var/lib/jenkins/workspace/amazonproject2" \
-                    returntocorp/semgrep semgrep ci '''
-            } catch (Exception e) {
-                echo "Failed to execute Semgrep scan: ${e.message}"
-                currentBuild.result = 'FAILURE'
+                script {
+                    try {
+                        // Pull the Semgrep Docker image
+                        sh 'docker pull returntocorp/semgrep'
+                        
+                        // Run Semgrep scan within the Docker container
+                        sh ''' docker run \
+                            -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
+                            -v "$(pwd):/var/lib/jenkins/workspace/amazonproject2" \
+                            -w "/var/lib/jenkins/workspace/amazonproject2" \
+                            returntocorp/semgrep semgrep ci '''
+                    } catch (Exception e) {
+                        echo "Failed to execute Semgrep scan: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
             }
         }
-    }
-}
 
-
-
-         stage('Upload Semgrep Scan Report to DefectDojo') {
+        stage('Upload Semgrep Scan Report to DefectDojo') {
             steps {
                 script {
                     uploadScanReport('semgrep.json')
@@ -106,6 +103,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Trivy Image Scan') {
             steps {
                 script {
@@ -154,6 +152,7 @@ pipeline {
             }
         }
     }
+}
 
 def uploadScanReport(reportFile) {
     // Upload the scan report to DefectDojo
