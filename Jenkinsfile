@@ -50,19 +50,21 @@ pipeline {
             }
         }
 
-       stage('Semgrep-Scan') {
-          steps {
-             script {
-                 try {
+        stage('Semgrep-Scan') {
+            steps {
+                script {
+                try {
                 // Pull the Semgrep Docker image
-                      sh 'docker pull returntocorp/semgrep'
+                sh 'docker pull returntocorp/semgrep'
                 
                 // Run Semgrep scan within the Docker container
-                      sh  'docker run' \
-                       -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
-                       -v "$(pwd):/workspace" \
-                       -w "/workspace" \
-                        returntocorp/semgrep semgrep ci
+                sh '''
+                    docker run \
+                    -e SEMGREP_APP_TOKEN="${SEMGREP_APP_TOKEN}" \
+                    -v "$(pwd):/workspace" \
+                    -w "/workspace" \
+                    returntocorp/semgrep semgrep ci
+                '''
             } catch (Exception e) {
                 echo "Failed to execute Semgrep scan: ${e.message}"
                 currentBuild.result = 'FAILURE'
@@ -70,6 +72,7 @@ pipeline {
         }
     }
 }
+
 
          stage('Upload Semgrep Scan Report to DefectDojo') {
             steps {
