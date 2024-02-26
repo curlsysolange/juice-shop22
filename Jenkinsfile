@@ -19,7 +19,7 @@ pipeline {
         
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Abbyabiola/juice-shop22.git'
+                git branch: 'master', url: 'https://github.com/Abbyabiola/juice-shop22.git'
             }
         }
 
@@ -55,6 +55,29 @@ pipeline {
                 sh 'npm install'
             }
         }
+
+         stage('Semgrep-Scan') {
+            steps {
+                script {
+                    try {
+                        // Pull the Semgrep Docker image
+                        sh 'docker pull returntocorp/semgrep'
+                        
+                        // Run Semgrep scan within the Docker container
+                        sh '''
+                            docker run \
+                            -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
+                            -v "$(pwd):/workspace" \
+                            -w "/workspace" \
+                            returntocorp/semgrep semgrep ci
+                        '''
+                    } catch (Exception e) {
+                        echo "Failed to execute Semgrep scan: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
+            }
+        }
          stage('Upload Semgrep Scan Report to DefectDojo') {
             steps {
                 script {
@@ -88,7 +111,18 @@ pipeline {
                 }
             }
         }
-        
+        stage('Trivy Image Scan') {
+            steps {
+                script {
+                    try {
+                        sh 'trivy image abimbola1981/juice-shop22:latest'
+                        sh 'pwd'
+                    } catch (Exception e) {
+                        echo "Failed to execute Trivy image scan: ${e.message}"
+                    }
+                }
+            }
+        }
         
         stage('Upload Trivy Scan Report to DefectDojo') {
             steps {
