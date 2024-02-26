@@ -8,6 +8,9 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         DOCKERHUB_CREDENTIALS = credentials('DockerHubCred')
         SEMGREP_APP_TOKEN = credentials('SEMGREP_APP_TOKEN')
+        path_to_host_folder_to_scan = "/mnt/c/Users/bimbi/OneDrive/Desktop/nanadevsec/juice-shop22"
+}
+
     }
     
     stages {
@@ -22,57 +25,22 @@ pipeline {
                 git branch: 'master', url: 'https://github.com/Abbyabiola/juice-shop22.git'
             }
         }
-
-        stage('Gitleaks Scan') {
+     stage('Gitleaks Scan') {
             steps {
                 script {
                     def gitleaks_report = 'gitleaks.json'
-                    // Run Gitleaks scan command here and generate the report
-                    // Example command: sh 'gitleaks --report=$gitleaks_report'
+                    sh "gitleaks --report=$path_to_host_folder_to_scan/$gitleaks_report"
                 }
             }
         }
 
         stage('Upload Gitleaks Scan Report to DefectDojo') {
-    steps {
-        script {
-            def apiUrl = 'https://your.defectdojo.instance/api/v2/import-scan/'
-            def apiToken = 'your_defectdojo_api_token_here'
-
-            def gitleaksReport = 'gitleaks.json'
-
-            def data = [
-                active: true,
-                verified: true,
-                scan_type: 'Gitleaks Scan',
-                minimum_severity: 'Low',
-                engagement: 19 // Assuming the engagement ID
-            ]
-
-            def headers = [
-                'Authorization': "Token ${apiToken}"
-            ]
-
-            def fileContent = new File(gitleaksReport).text
-
-            def response = httpRequest(
-                acceptType: 'APPLICATION_JSON',
-                contentType: 'APPLICATION_JSON',
-                httpMode: 'POST',
-                requestBody: fileContent,
-                url: apiUrl,
-                customHeaders: headers,
-                ignoreSslErrors: true // Remove this if not needed
-            )
-
-            if (response.status == 201) {
-                println('Successfully uploaded Gitleaks scan report to DefectDojo')
-            } else {
-                println('Failed to upload Gitleaks scan report to DefectDojo')
+            steps {
+                script {
+                    uploadScanReport("$path_to_host_folder_to_scan/gitleaks.json")
+                }
             }
         }
-    }
-}
 
         stage('SonarQube Analysis') {
             steps {
@@ -96,7 +64,6 @@ pipeline {
                             -v "$(pwd):/workspace" \
                             -w "/workspace" \
                             returntocorp/semgrep semgrep ci
-                        '''
                     } catch (Exception e) {
                         echo "Failed to execute Semgrep scan: ${e.message}"
                         currentBuild.result = 'FAILURE'
