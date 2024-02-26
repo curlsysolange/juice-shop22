@@ -1,5 +1,7 @@
 pipeline {
     agent any
+    tools {
+        nodejs 'node21'
     }
     
     environment {
@@ -20,6 +22,25 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Abbyabiola/juice-shop22.git'
             }
         }
+
+        stage('Gitleaks Scan') {
+            steps {
+                script {
+                    def gitleaks_report = 'gitleaks.json'
+                    // Run Gitleaks scan command here and generate the report
+                    // Example command: sh 'gitleaks --report=$gitleaks_report'
+                }
+            }
+        }
+
+        stage('Upload Gitleaks Scan Report to DefectDojo') {
+            steps {
+                script {
+                    uploadScanReport('gitleaks.json')
+                }
+            }
+        }
+
         
         stage('SonarQube Analysis') {
             steps {
@@ -32,6 +53,13 @@ pipeline {
         stage('NPM Install') {
             steps {
                 sh 'npm install'
+            }
+        }
+         stage('Upload Semgrep Scan Report to DefectDojo') {
+            steps {
+                script {
+                    uploadScanReport('semgrep.json')
+                }
             }
         }
         
@@ -61,40 +89,11 @@ pipeline {
             }
         }
         
-       stage('Semgrep-Scan') {
-    steps {
-        script {
-            try {
-                // Pull the Semgrep Docker image
-                sh 'docker pull returntocorp/semgrep'
-                
-                // Run Semgrep scan within the Docker container
-                sh '''
-                    docker run \
-                    -e SEMGREP_APP_TOKEN=$SEMGREP_APP_TOKEN \
-                    -v "$(pwd):/var/lib/jenkins/workspace/amazonproject2" \
-                    -w "/var/lib/jenkins/workspace/amazonproject2" \
-                    returntocorp/semgrep semgrep ci
-                '''
-            } catch (Exception e) {
-                echo "Failed to execute Semgrep scan: ${e.message}"
-                currentBuild.result = 'FAILURE'
-            }
-        }
-    }
-}
-  
-
-        stage('Trivy Image Scan') {
+        
+        stage('Upload Trivy Scan Report to DefectDojo') {
             steps {
                 script {
-                    try {
-                        sh 'trivy image abimbola1981/juice-shop22
-                        :latest'
-                        sh 'pwd'
-                    } catch (Exception e) {
-                        echo "Failed to execute Trivy image scan: ${e.message}"
-                    }
+                    uploadScanReport('trivy.json')
                 }
             }
         }
@@ -102,7 +101,7 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    sh 'docker push abimbola1981/juice-shopp22:latest'
+                    sh 'docker push abimbola1981/juice-shop22:latest'
                     echo "Push Image to Registry"
                 }
             }
@@ -112,7 +111,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        def containername = 'amazonproject'
+                        def containername = 'juice-shop22'
                         def isRunning = sh(script: "docker ps -a | grep ${containername}", returnStatus: true)
                         if (isRunning == 0) {
                             sh "docker stop ${containername}"
@@ -126,4 +125,9 @@ pipeline {
             }
         }
     }
+}
+
+def uploadScanReport(reportFile) {
+    // Upload the scan report to DefectDojo
+    // Example command: sh "defectdojo-cli upload --product-name=amazonpro --engagement-name=amazonpro --scan-type=container --file=$reportFile"
 }
