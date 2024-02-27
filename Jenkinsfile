@@ -24,23 +24,6 @@ pipeline {
             }
         }
         
-        stage('Gitleaks Scan') {
-            steps {
-                script {
-                    def gitleaks_report = 'gitleaks.json'
-                    sh "gitleaks --report=$path_to_host_folder_to_scan/$gitleaks_report"
-                }
-            }
-        }
-
-        stage('Upload Gitleaks Scan Report to DefectDojo') {
-            steps {
-                script {
-                    uploadScanReport("$path_to_host_folder_to_scan/gitleaks.json")
-                }
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
