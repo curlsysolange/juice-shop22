@@ -1,0 +1,6 @@
+
+juice-shop2:
+    tags:
+    - ci
+    script:
+    -echco Hello world
